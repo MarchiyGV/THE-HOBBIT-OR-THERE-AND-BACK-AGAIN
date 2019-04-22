@@ -1,0 +1,88 @@
+import numpy as np
+import matplotlib.pyplot as plt 
+import math
+
+G = 6.67 * 10 ** (-11)
+M1 = 5.97 * 10 ** 24
+R1 = 6371 * 10 ** 3
+  
+def output(X, Y):
+    plt.plot(X,Y)  
+    plt.show()
+
+def rungeKutta(f_vx, f_vy, f_x, f_y, to, vxo, vyo, xo, yo, tEnd, tau):
+         def increment1(f, t, x, tau):
+             k0 =tau * f(t, x)
+             k1 =tau * f(t + tau/2., x + k0/2.)
+             k2 =tau * f(t + tau/2., x + k1/2.)
+             k3 =tau * f(t + tau, x + k2)
+             return (k0 + 2.* k1 + 2.* k2 + k3) / 6.
+         
+         def increment2(f, t, x, y, tau):
+             return tau * f(t, x, y) 
+                  
+         t = []
+         vx = []
+         vy = []
+         x = []
+         y = []
+         t.append(to)
+         vx.append(vxo)
+         vy.append(vyo)
+         x.append(xo)
+         y.append(yo)
+         while to < tEnd:
+                  tau = min(tau, tEnd - to)
+                  to = to + tau
+                  #print(vxo, vyo, xo, yo)
+                  vxo = vxo + increment2(f_vx, to, xo, yo, tau)
+                  vyo = vyo + increment2(f_vy, to, xo, yo, tau)
+                  xo = xo + increment1(f_x, to, vxo, tau)
+                  yo = yo + increment1(f_y, to, vyo, tau)
+                  t.append(to)
+                  vx.append(vxo)
+                  vy.append(vyo)
+                  x.append(xo)
+                  y.append(yo)         
+         return np.array(t), np.array(x), np.array(y)
+    
+def f_vx(t, x0, y0):
+         f_vx = np.zeros([1])
+         if t < T:
+             f_vx[0] = -G * M1 * x0 / math.pow(x0 ** 2 + y0 ** 2, 1.5) + a * y0 / math.sqrt(x0 ** 2 + y0 ** 2)
+         else:
+             f_vx[0] = -G * M1 * x0 / math.pow(x0 ** 2 + y0 ** 2, 1.5)
+         return f_vx
+    
+def f_vy(t, x0, y0):
+         f_vy = np.zeros([1])
+         if t < T:
+             f_vy[0] = -G * M1 * y0 / math.pow(x0 ** 2 + y0 ** 2, 1.5) + a * x0 / math.sqrt(x0 ** 2 + y0 ** 2)
+         else:
+             f_vy[0] = -G * M1 * y0 / math.pow(x0 ** 2 + y0 ** 2, 1.5)
+         return f_vy
+     
+def f_x(t, vx0):
+         f_x = np.zeros([1])
+         f_x[0] = vx0
+         return f_x
+     
+def f_y(t, vy0):
+         f_y = np.zeros([1])
+         f_y[0] = vy0
+         return f_y
+
+R = R1 + 70. * (10 ** 3)
+        
+to = 0.
+tEnd = 2000
+vxo = np.array([math.sqrt(G*M1/R)])
+vyo = np.array([0.])
+xo = np.array([0.])
+yo = np.array([R])
+tau = 0.01
+a = 25.
+T = 100
+t, x, y = rungeKutta(f_vx, f_vy, f_x, f_y, to, vxo, vyo, xo, yo, tEnd, tau)
+
+output(x, y)
